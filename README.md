@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio ai-Chatbot
 
-## Getting Started
+Frontend developer 수민의 대화형 인터랙티브 포트폴리오
 
-First, run the development server:
+## 목표
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Nuxt3(Vue.js) 개발자 -> Next.js 15(React) 기술 확장
+clone-chatGpt 를 만들어 Nuxt와 비교해보며 Next.js 15 학습 후,
+완성된 파일을 토대로 chatGpt 기반 대화형 포트폴리오로 재구축
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 주요 기능
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+포트폴리오 챗봇 | 경력, 스택, 프로젝트 등 '수민'의 정보 기반 응답
+(*할루시네이션 방지 + 정보 기반 대화 구조)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 로그인/회원가입
+- 서버에 사용자 대화 기록
+- GPT 모델 선택, 다크/라이트 테마 전환
 
-## Learn More
+## 기술 스택
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js 15 (App Router)
+- TypeScript
+- Zustand
+- Drizzle ORM + Neon (postgres)
+- shadcn/ui
+- zod
+- react-hot-toast
+- ...
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 진행 기록
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2025-10-17 | 프로젝트 초기화 및 README 작성, @shadcn-ui
