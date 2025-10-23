@@ -4,6 +4,7 @@ import { FloatingCard } from '@/components/intro/FloatingCard';
 import { Submit } from '@/components/intro/Submit';
 import { Input } from '@/components/ui/input';
 import { ArrowRightIcon, CircleAlert } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { ChangeEvent, useActionState, useEffect, useState } from 'react';
 import { useFormValidate } from '../../hooks/useFormValidate';
 import { nameSchema } from '../../schema/auth';
@@ -12,6 +13,7 @@ import { createSession } from './actions';
 // sessionId가 없으면 introPage로, 있다면 바로 chat으로
 
 export default function IntroPage() {
+  const router = useRouter();
   const [values, setValues] = useState({ name: '' });
   const { errors, validateField } = useFormValidate<{ name?: string[] }>(
     nameSchema
@@ -28,9 +30,9 @@ export default function IntroPage() {
   useEffect(() => {
     if (state.success && state.sessionId) {
       localStorage.setItem('sessionId', state.sessionId);
-      // router.push("/chat")
+      router.replace("/chat")
     }
-  }, [state]);
+  }, [state, router]);
 
   return (
     <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100">
