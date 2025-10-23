@@ -4,7 +4,7 @@ import { FloatingCard } from '@/components/intro/FloatingCard';
 import { Submit } from '@/components/intro/Submit';
 import { Input } from '@/components/ui/input';
 import { ArrowRightIcon, CircleAlert } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { ChangeEvent, useActionState, useEffect, useState } from 'react';
 import { useFormValidate } from '../../hooks/useFormValidate';
 import { nameSchema } from '../../schema/auth';
