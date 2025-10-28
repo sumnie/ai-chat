@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
+import { Loading } from "@/components/Loading";
 
 export default function Home() {
-  redirect('/intro')
+    return (
+        <Loading></Loading>
+    )
 }

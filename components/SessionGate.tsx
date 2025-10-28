@@ -1,12 +1,11 @@
+'use client';
 // auth 없이 sessionId 만으로 사용자 구분. middleWare 도입 없이 layout에서 세션 분기 처리. layout은 서버 컴포넌트로 유지
 
 //todo 혹시 /intro에서 /c로 깜빡거린다면 useEffect 전까지 렌더링을 멈추게 하고 분기 완료 후 화면 렌더 허용시키기 **setReady
 
-'use client';
-
-import { Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Loading } from './Loading';
 
 export function SessionGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -32,10 +31,7 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100">
-        <Loader2 className="animate-spin mb-3" size={28} />
-        <span className="text-gray-500">세션을 확인하는 중입니다...</span>
-      </div>
+    <Loading></Loading>
     )
   }
   return <>{children}</>;
