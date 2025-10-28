@@ -27,6 +27,5 @@ export function useFormValidate<T>(schema: ZodObject<ZodRawShape>){
             // Zod의 에러 객체(ZodError)를 사람이 보기 좋은 평평한(flat) 구조로 바꿔줍니다. fieldErrors 객체의 각 필드는  배열 string[]형태. name: ["이름은 필수입니다.", "이름은 10자 이하로 입력해주세요."], 이렇게 하나의 필드에 여러 에러메시지가 붙을수도 있다고 가정하기 때문.
         }
     }
-    // safeParse()는 “검증 실패 시 에러 던지지 말고 결과 객체로 돌려줘!”
     return { errors, validateField }
 }

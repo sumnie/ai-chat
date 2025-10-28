@@ -4,13 +4,15 @@
 
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function SessionGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // redirect 방지 위해 pathname 추가. 조건이 맞다면 불필요한 리다이렉트 X
   const pathname = usePathname();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const sessionId = localStorage.getItem('sessionId');
@@ -24,8 +26,18 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
     if (sessionId && pathname !== '/chat') {
       router.replace('/chat');
     }
+
+    setReady(true);
   }, [pathname, router]); // 라우트가 바뀔 때마다 실행되도록 pathname 추가... React Hook 규칙(ESLint) 에선 “effect 안에서 참조하는 모든 외부 값은 dependency에 포함하라”는 룰 있음
 
+  if (!ready) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100">
+        <Loader2 className="animate-spin mb-3" size={28} />
+        <span className="text-gray-500">세션을 확인하는 중입니다...</span>
+      </div>
+    )
+  }
   return <>{children}</>;
 }
 
