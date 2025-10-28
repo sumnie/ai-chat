@@ -1,21 +1,46 @@
 // DB저장/조회용
 import { db } from '@/db';
 import { messages } from '@/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 // 1️⃣ 모든 메시지 조회
-export async function GET() {
-  const result = await db.select().from(messages).orderBy(messages.createdAt);
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const sessionId = searchParams.get('sessionId');
+  if (!sessionId) {
+    return Response.json({ error: 'sessionId required' }, { status: 400 });
+  }
+  const result = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.sessionId, sessionId))
+    .orderBy(messages.createdAt);
+
   return Response.json(result);
 }
 
-// 2️⃣ 새 메시지 추가
-export async function POST(req: Request) {
-  const { role, content } = await req.json();
+// 2️⃣ 새 메시지 추가 (sessionId 포함)
 
-  if (!role || !content) {
+export async function POST(req: Request) {
+  const { sessionId, role, content } = await req.json();
+
+  if (!sessionId || !role || !content) {
     return new Response('Invalid body', { status: 400 });
   }
 
-  await db.insert(messages).values({ role, content });
-  return new Response('Message saved', { status: 201 });
+  try {
+    // ✅ sessionId를 uuid로 캐스팅
+    const result = await db
+      .insert(messages)
+      .values({
+        sessionId: sql`${sessionId}::uuid`,
+        role,
+        content,
+      })
+      .returning();
+
+    return new Response('Message saved', { status: 201 });
+  } catch (error) {
+    return new Response('DB insert error', { status: 500 });
+  }
 }

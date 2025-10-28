@@ -32,3 +32,4 @@ Frontend developer sumnie 인터랙티브 포트폴리오
 
 - 2025-10-17 | 프로젝트 초기화 및 README 작성, @shadcn-ui
 - 2025-10-24 | Intro 페이지, Drizzle ORM + neon, 세션ID 추가 액션
+- 2025-10-29 | Chat 페이지, AI-SDK 연결, 다크 테마, DB 대화 조회, 저장

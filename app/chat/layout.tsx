@@ -13,7 +13,7 @@ export default function ChatLayout({
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
   return (
-    <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] bg-zinc-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
       <div className="flex flex-col w-full min-h-[100vh] max-w-md px-3">
         {/* Header - (l)모델 선택, (r)테마 설정,  */}
         <Header></Header>

@@ -8,6 +8,7 @@ export const sessions = pgTable('sessions', {
 
 export const messages = pgTable('messages', {
   id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').notNull().references(() => sessions.id, {onDelete: 'cascade'}),
   role: text('role').$type<'user' | 'assistant'>().notNull(),
   content: text('content').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
