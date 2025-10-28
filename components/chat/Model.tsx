@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 export function Model() {
     const { model : currentModel , updateModel} = useModelStore();
-    const MODELS = ['gpt-3.5-turbo', "gpt-4", "gpt-4o"]
+    const MODELS = ['gpt-3.5-turbo', "gpt-4o-mini"]
     const handleChange = (selectModel: string) =>{
         updateModel(selectModel)
     }

@@ -32,4 +32,13 @@ Frontend developer sumnie 인터랙티브 포트폴리오
 
 - 2025-10-17 | 프로젝트 초기화 및 README 작성, @shadcn-ui
 - 2025-10-24 | Intro 페이지, Drizzle ORM + neon, 세션ID 추가 액션
-- 2025-10-29 | Chat 페이지, AI-SDK 연결, 다크 테마, DB 대화 조회, 저장
+- 2025-10-29 | Chat 페이지 완성  
+  - AI-SDK 연동 및 모델 선택 기능 연결
+  - 세션별 대화 조회/저장 구현 (`messages.sessionId` 외래키 추가)  
+  - `sessionIdRef` 도입 → React 클로저 문제 해결 및 실시간 세션 참조  
+  - 다크 테마 전환 UI
+  - 프롬프트 주입 (토큰 절감을 위한 4o-mini로 모델 수정)
+## todo
+
+- 마크업 정리 (테마, 마크업, UXUI)
+- 사용자가 입력한 이름을 store에 불러와 사용자 이름 user: 대체하기 

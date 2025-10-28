@@ -8,7 +8,7 @@ export const modelStore = createStore(
   persist(
     () => ({
       // () 꼭 감싸줘야 반환값(return)으로 인식. 없으면 코드 블록으로 이해해서 undefined 반환
-      model: 'gpt-4',
+      model: 'gpt-4o-mini',
       updateModel: (newModel: string) =>
         modelStore.setState({ model: newModel }),
     }),
