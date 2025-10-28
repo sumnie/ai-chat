@@ -5,3 +5,10 @@ export const sessions = pgTable('sessions', {
   name: text('name').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const messages = pgTable('messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  role: text('role').$type<'user' | 'assistant'>().notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

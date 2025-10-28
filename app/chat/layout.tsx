@@ -14,11 +14,11 @@ export default function ChatLayout({
   }, [theme]);
   return (
     <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
-      <div className="flex flex-col w-full min-h-[100vh] md:w-[768px]">
+      <div className="flex flex-col w-full min-h-[100vh] max-w-md px-3">
         {/* Header - (l)모델 선택, (r)테마 설정,  */}
         <Header></Header>
-        {/* 채팅 내역 - 세션 id를 통해 대화내역 불러오기 */}
-        {/* 대화내역이 아무것도 없다면 대화를 시작해볼까요?  */}
+        {/* 채팅 내역 - 세션 id를 통해 대화내역 불러오기 + 로딩 Comp*/}
+        {/* 대화내역이 아무것도 없다면 대화를 시작해볼까요? */}
         {children}
       </div>
     </div>
