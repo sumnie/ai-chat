@@ -1,5 +1,9 @@
 import { create } from "zustand"; //create()는 Zustand의 핵심 훅 생성 함수
 
+// React component 안에서만 호출 가능하고(클라 전용), SSR에서 직접 접근 불가.
+// React 렌더링 생명주기에 맞춰 동작하므로,
+// 반드시 'use client' 컴포넌트 내부에서만 사용 가능.
+
 type Theme = "light" | "dark";
 
 interface UserState {
