@@ -48,3 +48,4 @@ Frontend developer sumnie 인터랙티브 포트폴리오
 ## todo
 
 - 마크업 정리 (마크업, UXUI)
+- 서버에 등록되어있지 않은 sid가 message를 전송시도 할 때 클라이언트 단에서 에러 표출

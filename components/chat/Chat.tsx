@@ -2,14 +2,16 @@
 
 import { useModelStore } from '@/store/useModel';
 import { useUserStore } from '@/store/userStore';
+import { detectCategory } from '@/utils/chat/category';
 import { useChat } from '@ai-sdk/react';
 import { ArrowRightIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Submit } from '../intro/Submit';
 import { Loading } from '../Loading';
 import { Input } from '../ui/input';
 import { ChatHero } from './ChatHero';
+import { FollowUpMessage } from './FollowUpMessage';
 
 export function Chat() {
   const router = useRouter();
@@ -104,6 +106,28 @@ export function Chat() {
     },
   });
 
+  const answeredCategories = useMemo(() => {
+    const set = new Set<string>();
+
+    for (const msg of messages) {
+      if (msg.role !== 'user') continue;
+      const text = msg.parts
+        .filter((p) => p.type === 'text')
+        .map((p) => p.text)
+        .join('\n');
+
+      const cats = detectCategory(text);
+      cats.forEach((c) => set.add(c));
+    }
+
+    return Array.from(set);
+  }, [messages]);
+
+  const allCategories = ['tech', 'projects', 'values'] as const;
+  const remainingCategories = allCategories.filter(
+    (cat) => !answeredCategories.includes(cat)
+  );
+  const lastMessage = messages[messages.length - 1];
   const isStreaming = status === 'streaming';
 
   useEffect(() => {
@@ -140,13 +164,13 @@ export function Chat() {
         {/* sessionId를 조회해서 대화가 없을 때(새 대화) */}
         {loadError ? (
           <div className="p-4 text-sm text-red-500">{loadError}</div>
-        ) : messages.length === 0 ? (
-          <ChatHero
-            userName={userName}
-            onSelectQuestion={(q) => sendUserMessage(q)}
-          ></ChatHero>
         ) : (
-          <div></div>
+          messages.length === 0 && (
+            <ChatHero
+              userName={userName}
+              onSelectQuestion={(q) => sendUserMessage(q)}
+            ></ChatHero>
+          )
         )}
 
         {/* 기존에 나누던 대화가 있을 때 기존 대화 불러오기 */}
@@ -154,31 +178,47 @@ export function Chat() {
           <div key={message.id} className="whitespace-pre-wrap">
             {/* {message.role === 'user' ? userName : 'AI: '} */}
             {message.parts.map((part, i) => {
-              switch (part.type) {
-                case 'text':
-                  return message.role === 'user' ? (
-                    <div className="flex w-full flex-col gap-1 empty:hidden items-end my-3">
-                      <div
-                        className="bubble-bg relative rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 max-w-[90%] md:max-w-[70%]" //data-[multiline] : 속성이 붙어있으면 특정 스타일 적용,
-                        key={`${message.id}-${i}`}
-                      >
-                        {part.text}
-                      </div>
-                    </div>
-                  ) : (
-                    <div key={`${message.id}-${i}`} className="empty:hidden">
-                      {part.text}
-                    </div>
-                    // empty:hidden 아무 텍스트도 없을때 불필요한 공간 차지하지 않게 하기 위해. :empty CSS 선택자 기반
-                  );
-              }
+              if (part.type !== 'text') return null;
+              const partKey = `${message.id}-${i}`;
+              return message.role === 'user' ? (
+                <div
+                  className="flex w-full flex-col gap-1 empty:hidden items-end my-3"
+                  key={partKey}
+                >
+                  <div
+                    className="bubble-bg relative rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 max-w-[90%] md:max-w-[70%]" //data-[multiline] : 속성이 붙어있으면 특정 스타일 적용,
+                  >
+                    {part.text}
+                  </div>
+                </div>
+              ) : (
+                <div key={partKey} className="empty:hidden">
+                  {part.text}
+                </div>
+                // empty:hidden 아무 텍스트도 없을때 불필요한 공간 차지하지 않게 하기 위해. :empty CSS 선택자 기반
+              );
             })}
           </div>
         ))}
+
+        {/* 정적 데이터 기반 follow-up 질문 / 종료 메시지 */}
+        <FollowUpMessage
+          hasMessages={messages.length > 0}
+          loadError={!!loadError}
+          isStreaming={isStreaming}
+          lastRole={lastMessage?.role}
+          remainingCategories={remainingCategories}
+          onSelectQuestion={sendUserMessage}
+          onAppear={() => {
+            if (scrollRef.current) {
+              scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+        />
         <div ref={scrollRef} />
       </div>
       <form
-        className="flex sticky bottom-0 w-full space-x-2 pb-3 bg-inherit pt-3"
+        className="flex sticky bottom-0 w-full space-x-2 pb-3 app-surface pt-3"
         onSubmit={handleSubmit}
       >
         <Input

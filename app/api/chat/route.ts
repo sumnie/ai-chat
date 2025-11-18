@@ -2,7 +2,14 @@
 // AI SDK 모델 호출용 (useChat 자동으로 사용)
 
 import { SYSTEM_PROMPT } from '@/constants/prompts';
-import { basicInfo, projects, techStack, values } from '@/data/portfolio';
+import {
+  basicInfo,
+  personality,
+  projects,
+  techStack,
+  values,
+} from '@/data/portfolio';
+import { detectCategory } from '@/utils/chat/category';
 import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, UIMessage } from 'ai';
 // route handler는 클라이언트로부터 요청을 받아 외부 AI API를 호출하고, 받은 응답을 매플리케이션이 사용할 수 있는 스트림 형태로 변환하는 역할 담당.
@@ -20,6 +27,7 @@ export async function POST(req: Request) {
   const lastUserMessage = [...messages]
     .reverse()
     .find((m) => m.role === 'user');
+
   const meta = lastUserMessage?.metadata as { model?: string };
   const selectModel = meta?.model ?? 'gpt-4o-mini';
 
@@ -34,43 +42,100 @@ export async function POST(req: Request) {
       .join('\n')
       ?.toLowerCase() || '';
 
-  const topicKeywords = {
-    tech: ['기술', '스택', 'tech', '언어', '프레임워크', '도구', '라이브러리'],
-    projects: ['프로젝트', '커리어', 'project', '개발한', '만든', '경험'],
-    values: ['가치', '협업', '태도', '스타일', '마인드', '철학', '일하는 방식'],
-    basic: ['소개', '누구', '자기소개', '본인', '당신', '경력'],
-  };
+  // 카테고리 감지
+  const matchedCategories = detectCategory(lastUserText);
 
-  const matchedCategories = (
-    Object.keys(topicKeywords) as Array<keyof typeof topicKeywords>
-  ) // obj의 key만 추려서 타입으로 만들어줌
-    .filter((key) =>
-      topicKeywords[key].some((kw) => lastUserText.includes(kw))
-    ); //some() : 하나라도 만족하면 true 반환, filter() : 조건 만족하는 key들만 배열로 반환
-
-  const injectedData: Record<string, any> = {}; // 조건에 맞는 카테고리를 여러개 넣을 수 있는 유연한 객체생성. string키, any 값
-
-  if (matchedCategories.includes('tech')) injectedData.tech = techStack;
-  if (matchedCategories.includes('projects')) injectedData.projects = projects;
-  if (matchedCategories.includes('values')) injectedData.values = values;
-  if (matchedCategories.includes('basic')) injectedData.basic = basicInfo;
-
-  if (Object.keys(injectedData).length > 0) {
+  // 4. 카테고리별로 주입할 텍스트 조립 (카테고리가 하나도 안 맞는 경우 -> 추측 금지)
+  if (matchedCategories.length === 0) {
     messagesForModel.unshift({
-      id: 'injected-data-0',
+      id: 'injected-none',
       role: 'system',
       parts: [
         {
           type: 'text',
-          text:
-            `아래는 방문자에게 소개할 '김수민'님의 실제 포트폴리오 데이터입니다. \n` +
-            `이 데이터의 주체는 챗봇이 아니라 '수민'입니다\n` +
-            `항상 3인칭으로 설명하고, 제공된 정보로만 답하세요.` +
-            `${JSON.stringify(injectedData, null, 2)}`,
+          text: [
+            '사용자의 질문은 현재 제공된 포트폴리오 데이터와 직접적으로 연결되지 않습니다.',
+            '절대 새로운 정보를 생성하거나 추측하지 말고,',
+            '반드시 다음과 같이만 답변하세요:',
+            '',
+            '제가 가지고 있는 정보는 기술·경력·프로젝트·가치관에 관한 내용이에요.',
+            '이 범위 안에서 다시 질문해 주시면 더 정확하게 답변드릴 수 있습니다 :)',
+          ].join('\n'),
         },
       ],
     });
+  } else {
+    const contextPieces: string[] = [];
+
+    if (matchedCategories.includes('basic')) {
+      contextPieces.push(
+        [
+          `- 기본 정보:`,
+          `• 이름: ${basicInfo.name}`,
+          `• 직무: ${basicInfo.job}`,
+          `• 경력: 약 ${basicInfo.years}년`,
+          `• 요약: ${basicInfo.summary}`,
+          basicInfo.flutter ? `• Flutter 경험: ${basicInfo.flutter}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n')
+      );
+    }
+
+    if (matchedCategories.includes('tech')) {
+      contextPieces.push(
+        [
+          `- 기술 스택 및 활용 맥락:`,
+          ...techStack.map((t) => `• ${t.name}: ${t.usage}`),
+        ].join('\n')
+      );
+    }
+
+    if (matchedCategories.includes('projects')) {
+      contextPieces.push(
+        [
+          `- 주요 프로젝트 및 기여:`,
+          ...projects.map((p) => {
+            const contrib = p.contributions.map((c) => `  - ${c}`).join('\n');
+            return `• ${p.name} (${p.summary || '프로젝트'})\n${contrib}`;
+          }),
+        ].join('\n')
+      );
+    }
+
+    if (matchedCategories.includes('values')) {
+      contextPieces.push(
+        [
+          `- 일하는 방식과 가치관:`,
+          ...values.map((v) => `• ${v.title}: ${v.detail}`),
+        ].join('\n')
+      );
+    }
+    if (matchedCategories.includes('personality')) {
+      contextPieces.push(
+        [
+          `- 인성 및 협업 스타일:`,
+          ...personality.map((p) => `• ${p.title}: ${p.detail}`),
+        ].join('\n')
+      );
+    }
+
+    if (contextPieces.length > 0) {
+      const injectedText = [
+        `아래는 프론트엔드 개발자 김수민님의 포트폴리오 관련 요약 정보입니다.`,
+        `이 내용을 참고해, 인사담당자가 보기 편한 자연스러운 한국어 문장으로만 답변하세요.`,
+        `데이터를 그대로 나열하지 말고, 질문과 가장 관련 있는 부분만 골라 핵심 위주로 다시 정리해서 설명하세요.\n`,
+        contextPieces.join('\n\n'),
+      ].join('\n');
+
+      messagesForModel.unshift({
+        id: `injected-text`,
+        role: 'system',
+        parts: [{ type: 'text', text: injectedText }],
+      });
+    }
   }
+
   // 4. 첫 메시지라면 system prompt 추가
   if (messages.length === 1) {
     messagesForModel.unshift({
