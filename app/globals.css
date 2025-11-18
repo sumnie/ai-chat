@@ -127,6 +127,11 @@
   }
 }
 
+@layer components{
+  .app-surface {
+    @apply bg-background/95 backdrop-blur transition-colors duration-300;
+  }
+}
 @layer utilities {
   .scrollbar {
     scrollbar-width: thin;
@@ -148,4 +153,18 @@
     border-radius: 8px;
   }
   .bubble-bg{background-color: var(--message-bg);}
+   .fade-slide-in {
+    animation: fadeSlideIn 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
