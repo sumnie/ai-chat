@@ -1,6 +1,7 @@
 'use client';
 
 import { useModelStore } from '@/store/useModel';
+import { useUserStore } from '@/store/userStore';
 import { useChat } from '@ai-sdk/react';
 import { ArrowRightIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,7 @@ export function Chat() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const userName = useUserStore((state) => state.name);
 
   // ✅ 마지막 user 입력값을 저장해두는 ref (messages 상태와 분리)
   const lastMetaRef = useRef<{ model?: string; userText?: string }>({});
@@ -45,7 +47,6 @@ export function Chat() {
       setIsLoading(false);
     }
   }, []);
-
   // 세션 로드
   useEffect(() => {
     const stored =
@@ -135,8 +136,11 @@ export function Chat() {
           <div className="p-4 text-sm text-red-500">{loadError}</div>
         ) : messages.length === 0 ? (
           <div className="flex py-5 flex-1 justify-center items-center">
-            <h1 className="text-lg sm:text-2xl text-center">
-              대화를 시작해볼까요?
+            <h1 className="text-center">
+              안녕하세요, {userName} 님! 만나서 반가워요.
+              <br />
+              저는 수민 님의 포트폴리오 챗봇이에요.
+              <br /> 어떤 것이 궁금하세요?
               {/* ul li 기술스택 / 커리어 / 인성으로 자동질문 카드 3개 */}
             </h1>
           </div>
@@ -147,7 +151,7 @@ export function Chat() {
         {/* 기존에 나누던 대화가 있을 때 기존 대화 불러오기 */}
         {messages.map((message) => (
           <div key={message.id} className="whitespace-pre-wrap">
-            {message.role === 'user' ? 'User: ' : 'AI: '}
+            {message.role === 'user' ? userName : 'AI: '}
             {message.parts.map((part, i) => {
               switch (part.type) {
                 case 'text':

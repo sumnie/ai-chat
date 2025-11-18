@@ -3,6 +3,7 @@
 import { FloatingCard } from '@/components/intro/FloatingCard';
 import { Submit } from '@/components/intro/Submit';
 import { Input } from '@/components/ui/input';
+import { useUserStore } from '@/store/userStore';
 import { ArrowRightIcon, CircleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useActionState, useEffect, useState } from 'react';
@@ -22,6 +23,9 @@ export default function IntroPage() {
     success: false,
     sessionId: '',
   });
+
+  const { name, setName } = useUserStore();
+
   // 1️⃣ useActionState: form이 제출되면 formData를 Next.js 서버로 자동 전송하여 createSession(커스텀 서버 함수)을 실행
   // 2️⃣ createSession은 (prevState, formData)를 인자로 받으며, prevState는 액션 실행 직전의 state
   // 3️⃣ 함수의 return 값이 새로운 state로 업데이트됨
@@ -34,9 +38,11 @@ export default function IntroPage() {
   useEffect(() => {
     if (state.success && state.sessionId) {
       localStorage.setItem('sessionId', state.sessionId);
+      useUserStore.getState().setName(values.name); // 훅은 컴포넌트 최상단에서만 호출되어야 함. useEffect, 조건문, 반복문 안에서 호출 금지.
+      // useUserStore도 훅이지만, zustand는 getState()로 스토어 객체에 바로 접근하는 JS 메서드를 제공함. (훅 아님)
       router.replace('/chat');
     }
-  }, [state, router]);
+  }, [state, router, values.name]);
 
   return (
     <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100">
