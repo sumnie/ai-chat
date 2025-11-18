@@ -129,11 +129,11 @@ export function Chat() {
   }
   return (
     <>
-      <div className="flex flex-col w-full h-full flex-1 overflow-y-auto">
+      <div className="flex flex-col w-full h-full flex-1 overflow-y-auto scrollbar px-2">
         {/* sessionId를 조회해서 대화가 없을 때(새 대화) */}
         {loadError ? (
-            <div className="p-4 text-sm text-red-500">{loadError}</div>
-        ) :  messages.length === 0 ? (
+          <div className="p-4 text-sm text-red-500">{loadError}</div>
+        ) : messages.length === 0 ? (
           <div className="flex py-5 flex-1 justify-center items-center">
             <h1 className="text-lg sm:text-2xl text-center">
               대화를 시작해볼까요?
@@ -143,7 +143,7 @@ export function Chat() {
         ) : (
           <div></div>
         )}
-       
+
         {/* 기존에 나누던 대화가 있을 때 기존 대화 불러오기 */}
         {messages.map((message) => (
           <div key={message.id} className="whitespace-pre-wrap">
@@ -159,7 +159,7 @@ export function Chat() {
         <div ref={scrollRef} />
       </div>
       <form
-        className="flex sticky bottom-0 w-full space-x-2 pb-3"
+        className="flex sticky bottom-0 w-full space-x-2 pb-3 bg-inherit pt-3"
         onSubmit={handleSubmit}
       >
         <Input
@@ -168,7 +168,11 @@ export function Chat() {
           className="py-5"
           onChange={(e) => setInput(e.currentTarget.value)}
         />
-        <Submit size="icon" className="p-5" disabled={isStreaming || !sessionIdRef.current}>
+        <Submit
+          size="icon"
+          className="p-5"
+          disabled={isStreaming || !sessionIdRef.current}
+        >
           <ArrowRightIcon />
         </Submit>
       </form>
