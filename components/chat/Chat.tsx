@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Submit } from '../intro/Submit';
 import { Loading } from '../Loading';
 import { Input } from '../ui/input';
+import { ChatHero } from './ChatHero';
 
 export function Chat() {
   const router = useRouter();
@@ -111,15 +112,20 @@ export function Chat() {
     }
   }, [messages]);
 
+  const sendUserMessage = useCallback(
+    (text: string) => {
+      const sid = sessionIdRef.current;
+      if (!sid) return; // 세션 없으면 무시
+      if (!text.trim() || isStreaming) return;
+      lastMetaRef.current = { model, userText: text };
+      sendMessage({ text, metadata: { model } });
+    },
+    [model, sendMessage, isStreaming]
+  );
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      const sid = sessionIdRef.current;
-      if (!sid) return; // 세션 없으면 무시
-      if (!input.trim() || isStreaming) return;
-      lastMetaRef.current = { model, userText: input };
-      // ✅ AI 호출
-      sendMessage({ text: input, metadata: { model } });
+      sendUserMessage(input);
       setInput('');
     },
     [input, model, sendMessage, isStreaming]
@@ -135,15 +141,10 @@ export function Chat() {
         {loadError ? (
           <div className="p-4 text-sm text-red-500">{loadError}</div>
         ) : messages.length === 0 ? (
-          <div className="flex py-5 flex-1 justify-center items-center">
-            <h1 className="text-center">
-              안녕하세요, {userName} 님! 만나서 반가워요.
-              <br />
-              저는 수민 님의 포트폴리오 챗봇이에요.
-              <br /> 어떤 것이 궁금하세요?
-              {/* ul li 기술스택 / 커리어 / 인성으로 자동질문 카드 3개 */}
-            </h1>
-          </div>
+          <ChatHero
+            userName={userName}
+            onSelectQuestion={(q) => sendUserMessage(q)}
+          ></ChatHero>
         ) : (
           <div></div>
         )}
@@ -151,11 +152,25 @@ export function Chat() {
         {/* 기존에 나누던 대화가 있을 때 기존 대화 불러오기 */}
         {messages.map((message) => (
           <div key={message.id} className="whitespace-pre-wrap">
-            {message.role === 'user' ? userName : 'AI: '}
+            {/* {message.role === 'user' ? userName : 'AI: '} */}
             {message.parts.map((part, i) => {
               switch (part.type) {
                 case 'text':
-                  return <div key={`${message.id}-${i}`}>{part.text}</div>;
+                  return message.role === 'user' ? (
+                    <div className="flex w-full flex-col gap-1 empty:hidden items-end my-3">
+                      <div
+                        className="bubble-bg relative rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 max-w-[90%] md:max-w-[70%]" //data-[multiline] : 속성이 붙어있으면 특정 스타일 적용,
+                        key={`${message.id}-${i}`}
+                      >
+                        {part.text}
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={`${message.id}-${i}`} className="empty:hidden">
+                      {part.text}
+                    </div>
+                    // empty:hidden 아무 텍스트도 없을때 불필요한 공간 차지하지 않게 하기 위해. :empty CSS 선택자 기반
+                  );
               }
             })}
           </div>

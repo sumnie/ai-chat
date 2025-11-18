@@ -78,10 +78,11 @@
   --sidebar-ring: oklch(0.708 0 0);
   --scrollbar-track: 240 5% 96%;
   --scrollbar-thumb: 240 6% 70%;
+  --message-bg: #e9e9e980;
 }
 
 .dark {
-  --background: #121212;
+  --background: #212121;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -114,6 +115,7 @@
   --sidebar-ring: oklch(0.556 0 0);
   --scrollbar-track: 0 0 7%;
   --scrollbar-thumb: 240 6% 30%;
+  --message-bg: #323232d9;
 }
 
 @layer base {
@@ -145,4 +147,5 @@
     background: hsl(var(--scrollbar-thumb));
     border-radius: 8px;
   }
+  .bubble-bg{background-color: var(--message-bg);}
 }
