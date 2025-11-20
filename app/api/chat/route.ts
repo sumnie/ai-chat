@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const selectModel = meta?.model ?? 'gpt-4o-mini';
 
   // 2. 모델 호출용 메시지 배열 복사 (DB/클라이언트 저장 X)
-  let messagesForModel = [...messages];
+  const messagesForModel = [...messages];
 
   // 3. 질문 분석 -> 데이터 자동 주입
   const lastUserText =

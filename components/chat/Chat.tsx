@@ -3,6 +3,7 @@
 import { useModelStore } from '@/store/useModel';
 import { useUserStore } from '@/store/userStore';
 import { detectCategory } from '@/utils/chat/category';
+import type { UIMessage } from '@ai-sdk/react';
 import { useChat } from '@ai-sdk/react';
 import { ArrowRightIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -26,16 +27,20 @@ export function Chat() {
 
   // ✅ 마지막 user 입력값을 저장해두는 ref (messages 상태와 분리)
   const lastMetaRef = useRef<{ model?: string; userText?: string }>({});
-
+  type DBMessage = {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+  };
   const loadMessages = useCallback(async (sessionId: string) => {
     setLoadError(null);
     try {
       const res = await fetch(`/api/messages?sessionId=${sessionId}`);
       if (!res.ok) throw new Error(`GET /api/messages ${res.status}`);
-      const dbMessages = await res.json();
+      const dbMessages: DBMessage[] = await res.json();
 
       // AI SDK 형식으로 변환
-      const formattedMessages = dbMessages.map((msg: any) => ({
+      const formattedMessages: UIMessage[] = dbMessages.map((msg) => ({
         id: msg.id,
         role: msg.role,
         parts: [{ type: 'text', text: msg.content }],
@@ -43,9 +48,11 @@ export function Chat() {
 
       // ✅ messages 상태에 반영 (useChat의 setMessages 사용)
       setMessages(formattedMessages);
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ 메시지 불러오기 실패:', error);
-      setLoadError(error?.message ?? '메시지 불러오기에 실패했어요.');
+      setLoadError(
+        error instanceof Error ? error.message : '메시지 불러오기에 실패했어요.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +159,7 @@ export function Chat() {
       sendUserMessage(input);
       setInput('');
     },
-    [input, model, sendMessage, isStreaming]
+    [input, model, sendUserMessage, isStreaming]
   );
 
   if (isLoading) {

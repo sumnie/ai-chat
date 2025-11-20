@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
   try {
     // ✅ sessionId를 uuid로 캐스팅
-    const result = await db
+    await db
       .insert(messages)
       .values({
         sessionId: sql`${sessionId}::uuid`,

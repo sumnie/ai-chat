@@ -24,8 +24,6 @@ export default function IntroPage() {
     sessionId: '',
   });
 
-  const { name, setName } = useUserStore();
-
   // 1️⃣ useActionState: form이 제출되면 formData를 Next.js 서버로 자동 전송하여 createSession(커스텀 서버 함수)을 실행
   // 2️⃣ createSession은 (prevState, formData)를 인자로 받으며, prevState는 액션 실행 직전의 state
   // 3️⃣ 함수의 return 값이 새로운 state로 업데이트됨
