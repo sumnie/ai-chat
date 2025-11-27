@@ -29,15 +29,25 @@ export async function POST(req: Request) {
   }
 
   try {
+    const session = await db.execute(
+      // execute는 단순 쿼리 실행용. 세션 존재 여부를 먼저 확인
+      sql`SELECT 1 FROM sessions WHERE id = ${sessionId}::uuid`
+    );
+    if (session.rows.length === 0) {
+      // ✅ 세션 불일치 → 404로 명확히 반환
+      return Response.json(
+        { error: '존재하지 않는 세션입니다.' },
+        { status: 404 }
+      );
+    }
+
     // ✅ sessionId를 uuid로 캐스팅
-    await db
-      .insert(messages)
-      .values({
-        sessionId: sql`${sessionId}::uuid`,
-        role,
-        content,
-      })
-      .returning();
+    await db.insert(messages).values({
+      sessionId: sql`${sessionId}::uuid`,
+      role,
+      content,
+    });
+    // .returning() // 삽입된 행 반환. 결과를 쓸 때만 사용
 
     return new Response('Message saved', { status: 201 });
   } catch (error) {

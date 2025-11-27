@@ -2,19 +2,21 @@
 
 import { FloatingCard } from '@/components/intro/FloatingCard';
 import { Submit } from '@/components/intro/Submit';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
-import { ArrowRightIcon, CircleAlert } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { AlertCircleIcon, ArrowRightIcon, CircleAlert } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChangeEvent, useActionState, useEffect, useState } from 'react';
 import { useFormValidate } from '../../hooks/useFormValidate';
 import { nameSchema } from '../../schema/auth';
 import { createSession } from './actions';
-
 // sessionId가 없으면 introPage로, 있다면 바로 chat으로
 
 export default function IntroPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const reason = params.get('reason');
   const [values, setValues] = useState({ name: '' });
   const { errors, validateField } = useFormValidate<{ name?: string[] }>(
     nameSchema
@@ -44,6 +46,18 @@ export default function IntroPage() {
 
   return (
     <div className="flex justify-center items-center min-h-[100vh] max-h-[100vh] overflow-y-auto bg-zinc-100">
+      {reason === 'session-expired' && (
+        <Alert
+          variant="destructive"
+          className="absolute top-4 sm:top-8 w-[90%] sm:w-auto border-red-600"
+        >
+          <AlertCircleIcon className="h-4 w-4 shrink-0" />
+          <AlertTitle>세션이 유효하지 않습니다.</AlertTitle>
+          <AlertDescription>
+            새로운 대화를 시작합니다. 이름을 다시 입력해주세요.
+          </AlertDescription>
+        </Alert>
+      )}
       <FloatingCard
         title="안녕하세요 :)"
         description="대화를 위해, 방문하신 분의 이름을 알려주세요"

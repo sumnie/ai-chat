@@ -3,6 +3,7 @@
 import { useModelStore } from '@/store/useModel';
 import { useUserStore } from '@/store/userStore';
 import { detectCategory } from '@/utils/chat/category';
+import { handleInvalidSession } from '@/utils/session/sessionInvalid';
 import type { UIMessage } from '@ai-sdk/react';
 import { useChat } from '@ai-sdk/react';
 import { ArrowRightIcon } from 'lucide-react';
@@ -25,6 +26,32 @@ export function Chat() {
   const sessionIdRef = useRef<string | null>(null);
   const userName = useUserStore((state) => state.name);
 
+  // useCallback은 함수를 캐싱하는 React 훅. 값을 저장하는 useMemo의 함수버전
+  // useCallback의 첫번째 인자 = "저장할 함수", 두번째 인자 = "함수를 언제 새로 만들지 정하는 의존성 배열"
+
+  const saveMessage = useCallback(
+    async (payload: {
+      sessionId: string;
+      role: 'user' | 'assistant';
+      content: string;
+    }) => {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // 세션 불일치 처리
+      if (res.status === 404) {
+        handleInvalidSession(router);
+        throw new Error('invalid session.');
+      }
+
+      if (!res.ok) throw new Error(`message save failed : ${res.status}`);
+    },
+    [router]
+  );
+
   // ✅ 마지막 user 입력값을 저장해두는 ref (messages 상태와 분리)
   const lastMetaRef = useRef<{ model?: string; userText?: string }>({});
   type DBMessage = {
@@ -32,7 +59,7 @@ export function Chat() {
     role: 'user' | 'assistant';
     content: string;
   };
-  const loadMessages = useCallback(async (sessionId: string) => {
+  const loadMessages = async (sessionId: string) => {
     setLoadError(null);
     try {
       const res = await fetch(`/api/messages?sessionId=${sessionId}`);
@@ -56,7 +83,7 @@ export function Chat() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
   // 세션 로드
   useEffect(() => {
     const stored =
@@ -67,7 +94,7 @@ export function Chat() {
     }
     sessionIdRef.current = stored;
     loadMessages(stored);
-  }, [router, loadMessages]);
+  }, []); // 최초 1회 실행 deps 빈배열 고정
 
   const { messages, setMessages, sendMessage, status } = useChat({
     // ✅ AI 응답 스트리밍이 끝난 “방금 생성된 assistant 메시지”가 인자로 들어옴
@@ -87,25 +114,10 @@ export function Chat() {
 
         if (!userText) return;
 
-        await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: currentSession,
-            role: 'user',
-            content: userText,
-          }),
-        });
-
-        // ✅ assistant 메시지 DB에 저장
-        await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: currentSession,
-            role: 'assistant',
-            content: assistantText,
-          }),
+        await saveMessage({
+          sessionId: currentSession,
+          role: 'assistant',
+          content: assistantText,
         });
       } catch (error) {
         console.error('❌ 메시지 저장 실패:', error);
@@ -144,16 +156,23 @@ export function Chat() {
   }, [messages]);
 
   const sendUserMessage = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const sid = sessionIdRef.current;
       if (!sid) return; // 세션 없으면 무시
       if (!text.trim() || isStreaming) return;
       lastMetaRef.current = { model, userText: text };
+
+      const res = await saveMessage({
+        sessionId: sid,
+        role: 'user',
+        content: text,
+      });
       sendMessage({ text, metadata: { model } });
     },
-    [model, sendMessage, isStreaming]
+    [model, sendMessage, isStreaming, saveMessage]
   );
   const handleSubmit = useCallback(
+    //다른 컴포넌트에 props로 내려가거나 다른 hook의 deps로 들어가느냐에 따라 useCallback 적용 여부가 달라질 수 있음
     (e: React.FormEvent) => {
       e.preventDefault();
       sendUserMessage(input);
