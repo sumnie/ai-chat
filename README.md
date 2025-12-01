@@ -25,7 +25,6 @@ Frontend developer sumnie 인터랙티브 포트폴리오
 - Drizzle ORM + Neon (postgres)
 - shadcn/ui
 - zod
-- react-hot-toast
 - ...
 
 ## 진행 기록
@@ -57,4 +56,5 @@ Frontend developer sumnie 인터랙티브 포트폴리오
 ## todo
 
 - 마크업 정리 (마크업, UXUI)
-- 서버에 등록되어있지 않은 sid가 message를 전송시도 할 때 클라이언트 단에서 에러 표출해야함 (현재 터미널에서만 500 뜸)
+- 세션게이트 관리
+  - 세션이 있는 유저가 접속했을 때 Intro가 노출되었다가 채팅 페이지로 이동하는 문제 수정필요
